@@ -300,6 +300,3 @@ Send `X-Employee-Role` header in API requests to authenticate.
 
 ---
 
-## 📝 License
-
-Internal use — ACME Corporation | Built with ❤️ using LangGraph + Claude
