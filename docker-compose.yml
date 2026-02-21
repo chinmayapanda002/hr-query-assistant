@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  hr-api:
+    build: .
+    container_name: hr-assistant-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CHROMA_PERSIST_DIR=/app/data/chroma_db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/hr_analytics.db
+      - DOCUMENTS_DIR=/app/data/documents
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    command: uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  hr-dashboard:
+    build: .
+    container_name: hr-assistant-dashboard
+    ports:
+      - "8050:8050"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - API_PORT=8000
+      - API_HOST=hr-api
+      - DASHBOARD_PORT=8050
+    depends_on:
+      - hr-api
+    command: python src/dashboard/analytics_dashboard.py
+    restart: unless-stopped
+
+volumes:
+  hr-data:
